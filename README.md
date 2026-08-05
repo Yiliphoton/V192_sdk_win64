@@ -8,7 +8,7 @@
 
 ### 简介
 
-V192 SDK 提供 `v192_filter.dll`，用于解码一力光子（yiliphoton）V192 192 通道激光雷达（MSOP 协议）的点云数据，并内置近邻滤波器。支持实时 UDP 接收、PCAP 离线回放和手动数据包注入三种模式。
+V192 SDK 提供 `v192_filter.dll`，用于解码 V192 192 通道激光雷达（MSOP 协议）的点云数据，并内置近邻滤波器。支持实时 UDP 接收、PCAP 离线回放和手动数据包注入三种模式。
 
 **核心参数**
 - 192 通道，每帧 153 600 点（双回波：307 200 点）
@@ -161,7 +161,7 @@ filter.uninstall(h);
 
 ### Overview
 
-The V192 SDK ships `v192_filter.dll`, a Windows x64 library for decoding point-cloud data from the yiliphoton (一力光子) V192 192-channel LiDAR (MSOP protocol). It bundles the decoder and a neighbour-based point-cloud filter in a single DLL.
+The V192 SDK ships `v192_filter.dll`, a Windows x64 library for decoding point-cloud data from the V192 192-channel LiDAR (MSOP protocol). It bundles the decoder and a neighbour-based point-cloud filter in a single DLL.
 
 **Key specs**
 - 192 channels, 153,600 points/frame (307,200 in dual-echo mode)
