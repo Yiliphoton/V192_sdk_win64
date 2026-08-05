@@ -1,0 +1,21 @@
+# CMake build output
+demo/build/
+qt_demo/build/
+
+# VS user files
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+
+# Compiled object files
+*.obj
+*.pch
+
+# Executables
+*.exe
+*.ilk
+
+# PDB debug symbols (only in build dirs — keep dll/ PDB for distribution)
+demo/build/**/*.pdb
+qt_demo/build/**/*.pdb

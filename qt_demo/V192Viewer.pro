@@ -22,7 +22,7 @@ FORMS += \
     mainwindow.ui
 
 # V192 Decoder SDK 配置
-INCLUDEPATH += $$PWD/../include
+INCLUDEPATH += $$PWD
 
 # Npcap SDK 配置
 INCLUDEPATH += $$PWD/npcap-sdk-1.16/Include
@@ -33,9 +33,9 @@ msvc {
 }
 # Windows 配置
 win32 {
-    # 链接到 v192_decoder.lib (导入库)
-    LIBS +=  -L$$PWD -lv192_decoder
-    
+    # 链接到 v192_filter.lib (导入库)
+    LIBS += -L$$PWD -lv192_filter
+
     # 链接 Npcap SDK 库
     contains(QT_ARCH, x86_64) {
         LIBS += -L$$PWD/npcap-sdk-1.16/Lib/x64 -lwpcap -lPacket

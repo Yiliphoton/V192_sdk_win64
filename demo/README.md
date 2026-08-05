@@ -1,179 +1,140 @@
-# v192_decoder DLL 使用示例
+# V192 Decoder SDK — Demo
 
-这是一个简单的示例项目，展示如何在您的应用程序中使用 `v192_decoder.dll`。
+`simple_demo.cpp` 演示如何通过 `v192_filter.dll` 接收和解析 V192 激光雷达点云数据。
 
-## 📋 前提条件
+## 前提条件
 
-1. 已构建 `v192_decoder.dll`（位于 `../build/Release/`）
-2. Windows 系统已安装 [Npcap](https://npcap.com/)（用于在线捕获）
-3. CMake 3.10 或更高版本
-4. Visual Studio 2019 或更高版本
+- Windows 10 / 11 x64
+- Visual Studio 2019 或 2022（MSVC）
+- CMake 3.10+
+- [Npcap](https://npcap.com/) 运行时（在线模式需要安装）
 
-## 🔨 构建示例
+## 编译
 
-### 方法 1: 使用 CMake（推荐）
+### 方法一：双击脚本（最简单）
 
-```cmd
-cd demo
-mkdir build
-cd build
-cmake .. -G "Visual Studio 16 2019" -A x64
-cmake --build . --config Release
+直接双击 `build_demo.bat`，自动完成配置和编译。
+
+### 方法二：命令行 CMake
+
+**第一步：进入 demo 目录**
+
+```bat
+cd /d D:\v192_decoder\V192_SDK_win64_dll\V192_SDK\demo
 ```
 
-构建完成后，可执行文件位于：`build/Release/simple_demo.exe`
+**第二步：如果 build 目录已存在（换过路径或重新配置时），先清除缓存**
 
-### 方法 2: 手动编译
-
-```cmd
-cd demo
-cl /EHsc /std:c++17 /I"..\include" simple_demo.cpp /link "..\build\Release\v192_decoder.lib"
+```bat
+rmdir /s /q build
 ```
 
-然后将 `v192_decoder.dll` 复制到当前目录。
+**第三步：配置并编译**
 
-## 🚀 运行示例
-
-### 在线捕获模式（从网卡）
-
-使用默认端口 8899：
-```cmd
-simple_demo.exe online
+```bat
+cmake -B build -A x64
+cmake --build build --config Release
 ```
 
-使用自定义端口：
-```cmd
-simple_demo.exe online 8899
+输出：`build\Release\simple_demo.exe`（`v192_filter.dll` 会自动复制过去）
+
+编译 Debug 版本：
+
+```bat
+cmake --build build --config Debug
 ```
 
-**注意**：在线模式需要管理员权限！
+输出：`build\Debug\simple_demo.exe`
 
-### 离线解析模式（从 PCAP 文件）
+### 方法三：手动编译（无 CMake）
 
-```cmd
-simple_demo.exe pcap path\to\your\file.pcap
+打开 **x64 Native Tools Command Prompt for VS 2019/2022**，执行：
+
+```bat
+cd /d D:\v192_decoder\V192_SDK_win64_dll\V192_SDK\demo
+cl /EHsc /std:c++14 /I"..\include" simple_demo.cpp /link "..\dll\Release\v192_filter.lib"
+copy "..\dll\Release\v192_filter.dll" .
 ```
 
-例如：
-```cmd
-simple_demo.exe pcap ..\data\sample.pcap
+> 注意：必须用 VS 的 x64 Native Tools 命令提示符，普通 CMD 没有 `cl` 命令。
+
+## 运行
+
+### 在线模式（实时接收）
+
+```bat
+simple_demo.exe online           # 使用默认端口 8899
+simple_demo.exe online 8899      # 指定端口
 ```
 
-## 📊 示例输出
+在线模式需要以**管理员权限**运行，并确认 Npcap 已安装。按 Ctrl+C 停止。
+
+### 离线模式（PCAP 文件）
+
+```bat
+simple_demo.exe pcap data.pcap
+```
+
+## 示例输出
 
 ```
-启动在线捕获模式...
-端口: 8899
-设备: 自动选择
-
-等待数据... (按 Ctrl+C 停止)
-
-[Frame     1] points=307200  timestamp=1779435379.104  dual_return=yes
+[Frame     1] points=153600  timestamp=1779435379.104  dual_return=no
   [ 0] dist= 7.635m  az=  13.72°  el= -12.48°  xyz=(  1.769,  -7.250,  -1.615)  refl= 14  ring= 0
   [ 1] dist= 7.560m  az=  13.72°  el= -12.35°  xyz=(  1.750,  -7.175,  -1.617)  refl= 14  ring= 1
-  [ 2] dist= 7.635m  az=  13.72°  el= -12.22°  xyz=(  1.769,  -7.250,  -1.615)  refl= 14  ring= 2
-  [ 3] dist= 7.655m  az=  13.72°  el= -12.09°  xyz=(  1.774,  -7.272,  -1.602)  refl= 15  ring= 3
-  [ 4] dist= 7.485m  az=  13.72°  el= -11.96°  xyz=(  1.736,  -7.114,  -1.550)  refl= 20  ring= 4
-
-[Frame     2] points=307200  timestamp=1779435379.204  dual_return=yes
   ...
 
 --- Statistics ---
   Total frames: 10
-  Total points: 3072000
-  Avg points/frame: 307200
+  Total points: 1536000
+  Avg points/frame: 153600
   Duration: 1.00 seconds
   Frame rate: 10.0 fps
 ------------------
-
-=== 最终统计 ===
-总帧数: 100
-总点数: 30720000
-平均点数/帧: 307200
-总时长: 10.00 秒
-平均帧率: 10.0 fps
-================
 ```
 
-## 📝 代码说明
+双回波模式下每帧点数为 307,200（153,600 × 2）。
 
-### 核心代码结构
-
-```cpp
-// 1. 创建解码器
-v192::Decoder decoder;
-
-// 2. 设置回调函数
-decoder.set_callback(on_point_cloud_received, nullptr);
-
-// 3. 启动解码器（在线或离线）
-decoder.start_online(nullptr, 2368);  // 在线模式
-// 或
-decoder.start_pcap("file.pcap");      // 离线模式
-
-// 4. 运行解码器（阻塞）
-decoder.run();
-```
-
-### 回调函数
+## 核心代码结构
 
 ```cpp
-void on_point_cloud_received(const v192::PointCloud& cloud, void* user_data) {
-    // 处理点云数据
-    for (const auto& pt : cloud.points) {
-        // 访问点的属性：pt.x, pt.y, pt.z, pt.distance, etc.
+#include "v192_decoder.h"
+
+void on_frame(const V192Frame* frame, void* ud) {
+    for (uint32_t i = 0; i < frame->count; i++) {
+        const V192Point* pt = &frame->points[i];
+        // pt->x, pt->y, pt->z, pt->distance, pt->reflectivity, pt->ring ...
     }
+}
+
+int main() {
+    V192DecoderHandle h = v192_create("../dll/Release/V192-Correction.json");
+    v192_set_frame_callback(h, on_frame, nullptr);
+    v192_set_distance_range(h, 0.5f, 150.0f);
+
+    // 在线模式
+    v192_start_online(h, 8899);
+    // ... 等待 ...
+    v192_stop(h);
+
+    // 或 PCAP 模式
+    v192_open_pcap(h, "data.pcap");
+    while (v192_read_next_frame(h) == 0) {}
+    v192_close_pcap(h);
+
+    v192_destroy(h);
 }
 ```
 
-## 🔧 自定义修改
+## 常见问题
 
-您可以修改 `simple_demo.cpp` 来实现自己的功能：
+**找不到 v192_filter.dll** — CMake 构建会自动复制；手动编译需手动复制 `dll\Release\v192_filter.dll` 到 `.exe` 旁边。
 
-1. **点云过滤**：在回调函数中过滤特定距离或角度的点
-2. **数据保存**：将点云保存为 PCD、PLY 或其他格式
-3. **实时可视化**：集成 PCL、Open3D 等库进行可视化
-4. **多线程处理**：使用队列实现生产者-消费者模式
+**在线捕获失败** — 以管理员权限运行，确认 Npcap 已安装，确认雷达已连接并向本机发送 UDP 数据。
 
-## ⚠️ 常见问题
+**PCAP 文件打开失败** — 检查路径是否正确，文件是否为标准 PCAP 格式。
 
-### 问题 1: 找不到 DLL
+## 参考
 
-**错误**：`无法启动此程序，因为计算机中丢失 v192_decoder.dll`
-
-**解决**：
-- CMake 构建会自动复制 DLL
-- 手动编译需要将 DLL 复制到可执行文件目录
-
-### 问题 2: 在线捕获失败
-
-**错误**：`错误: 无法启动在线捕获`
-
-**解决**：
-1. 以管理员权限运行
-2. 确保已安装 Npcap
-3. 检查雷达是否连接并发送数据
-
-### 问题 3: PCAP 文件打开失败
-
-**错误**：`错误: 无法打开 PCAP 文件`
-
-**解决**：
-1. 检查文件路径是否正确
-2. 确认文件格式为标准 PCAP
-3. 检查文件读取权限
-
-## 📚 更多资源
-
-- [DLL_USAGE_DEMO.md](../DLL_USAGE_DEMO.md) - 详细的 API 文档和更多示例
-- [BUILD_WINDOWS.md](../BUILD_WINDOWS.md) - Windows 构建指南
-- [example/](../example/) - 官方示例代码
-
-## 📞 技术支持
-
-如有问题，请参考项目主目录的文档或联系技术支持。
-
----
-
-**版本**: 1.0.0  
-**更新日期**: 2026-05-22
+- `../include/v192_decoder.h` — C 公共 API
+- `../include/v192_filter.h` — C++ 滤波器 API
+- `../dll/说明.md` — SDK 文件清单与集成说明
